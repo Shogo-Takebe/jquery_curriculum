@@ -36,34 +36,98 @@
       //
       // $.ajaxによってデータが取得できたら、必要なデータ(作品名とか作者名とか)を取得します。
       // 取得できたらDOM上に<ul class='lists'></ul>を用意しているので、その中に下のテンプレに沿ってデータを入れ込みましょう。
-      // <li class='lists__item'>
-      //  <div class='lists__item__inner'>
-      //    <a href='' class='lists__item__link' target='_blank'>
-      //      <img src='' class='lists__item__img' alt=''>
-      //      <p class='lists__item__detail'>作品名：</p>
-      //      <p class='lists__item__detail'>作者　：</p>
-      //      <p class='lists__item__detail'>出版社：</p>
-      //    </a>
-      //  </div>
-      // </li>
+
+
+      
+
       //
       // オブジェクトで取得したデータへのアクセス方法 以下参考程度に
       // http://qiita.com/marumaru8228/items/65fc684383b096f0e548
       //
-      //
-      // $.ajax({
-      //   url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
-      //   type: 'GET',
-      //   datatype: 'json',
-      //   data: {
-      //     // 「区分:サービス固有パラメーター」を確認して、必要な情報をdata内に入れましょう。
-      //     applicationId: '1019399324990976605', // (今回はこのIDを使用してください)
-      //     booksGenreId: '001'
-      //   },
-      // }).done(function(data) {
-      //   // この中にデータ取得後の動きを記述していきます。
-      // });
-      //
+      $(function(){
+
+        var page = 1;
+        var beforekeyword = '';
+        $('#js-search-button').click(function(){
+          var keyword = $('#js-search-word').val();/*.valメソッドは、要素のvalueを表示*/
+          
+          if(beforekeyword === keyword){
+            page++;
+          }
+          else{
+            $('.lists').empty();
+              page = 1;
+              beforekeyword = keyword;
+          };
+
+          $.ajax({
+            url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
+            type: 'GET',
+            datatype: 'json',/*jsonは、keyとvalueを持つdatatype*/
+            data: {
+              // 「区分:サービス固有パラメーター」を確認して、必要な情報をdata内に入れましょう。
+              applicationId: '1019399324990976605', // (今回はこのIDを使用してください)
+              booksGenreId: '001',
+              keyword: keyword,
+              page: page,
+              hits: 20,
+            },
+
+          }).done(function(data) {
+            // console.log(data);
+
+            if(data.count === 0){
+              console.log('0件です');
+              alert('0件です');
+            }
+            else{
+
+            var databox = '';
+            /*データのItemsのIndexとvalueを20回、回す*/   
+                         /*(key,value(Item))*/ 
+
+              /*eachの動きを調べる*/
+            $.each(data.Items,function(index){
+              // console.log(index);
+              // console.log(data.Items[index].Item);
+              // a += b
+              // a = a + b
+              // 5 += 6
+              // a = 5+ 6
+                  databox += "<li class='lists__item'>" +
+                    "<div class='lists__item__inner'>" +
+                      "<a href='' class='lists__item__link' target='_blank'>" +
+                        "<img src='"+data.Items[index].Item.largeImageUrl+"'class='lists__item__img' alt=''>" +
+                           "<p class='lists__item__detail'>作品名 : "+ index+ data.Items[index].Item.title+ "</p>" +
+                           "<p class='lists__item__detail'>作者 : "+data.Items[index].Item.author+ "</p>" +
+                           "<p class='lists__item__detail'>出版社 : "+data.Items[index].Item.publisherName+ "</p>" +
+                      "</a>" +
+                    "</div>" +
+                  "</li>"
+
+             });
+            $('.lists').prepend(databox);
+
+             };
+
+                  // console.log('-----------------------------------');
+                  // console.log(databox);
+                  // console.log('-----------------------------------');
+
+            // https:app.rakuten.co.jp/services/api/BooksBook/Search/20170404?[parameter]=[value]…
+            
+
+            // この中にデータ取得後の動きを記述していきます。
+          })
+
+          .fail(function(){
+            alert('正しい結果を得られませんでした。');
+
+          });
+        });
+
+      });
+      
     </script>
   </body>
 </html>
